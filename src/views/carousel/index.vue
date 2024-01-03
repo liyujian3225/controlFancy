@@ -6,7 +6,7 @@
           color="#00FFF0"
           :stroke-width="13"
           :show-text="false"
-          :percentage="50" />
+          :percentage="focusNum" />
       </div>
       <div
         class="dot"
@@ -19,7 +19,7 @@
     </div>
     <div class="textProgress">
       <div>
-        <span>48</span>
+        <span>{{ focusNum }}</span>
       </div>
       <div>
         <span>专注力</span>
@@ -31,7 +31,8 @@
         <div
           class="carouselItemBox"
           v-for="(item, index) in mixSplideImageList"
-          :key="index">
+          :key="index"
+          :class="{focusImage: index === 7}">
           <img :src="item" alt="">
       </div>
       </div>
@@ -46,6 +47,26 @@
   </div>
 </template>
 <script setup>
+
+const sleep = (timer = 4000) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, timer)
+  })
+}
+
+//根据专注力计算轮播图的速度
+const getFocusSpeed = (focusNum) => {
+  let diffDistance = 0;
+  if(focusNum > 0 && focusNum <= 40) diffDistance = 15;
+  if(focusNum > 40 && focusNum < 80) {
+    //专注力：79 - 41 = 38
+    //距离：15 - 1 = 14
+    //14 / 38 = 0.368
+    diffDistance = 15 - ((focusNum - 41) * 0.368)
+  }
+  if(focusNum >= 80) diffDistance = 1;
+  return diffDistance;
+}
 
 //图片轮播图相关
 const mixSplideImageList_ = [
@@ -76,12 +97,66 @@ const mixSplideImageList_ = [
   "http://aigcassset.oss-cn-beijing.aliyuncs.com/%E9%A6%96%E9%A1%B5%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%89%8D%E5%8A%A8%E7%89%A9%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%89%8D%E5%9B%BE%E7%89%87/%E9%BE%9F.png",
 ]
 const mixSplideImageList = [...mixSplideImageList_, ...mixSplideImageList_, ...mixSplideImageList_, ...mixSplideImageList_];
+let carouseWidth = 1920 - ((mixSplideImageList.length * 300) + ((mixSplideImageList.length - 1) * 28));
 
-const sleep = (timer = 4000) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(resolve, timer)
-  })
-}
+let left = ref(0);
+let loopImageTimer = null;
+let loopImageFocusIndex = ref(0)
+onUnmounted(() => { if(loopImageTimer) clearInterval(loopImageTimer) })
+const loopImage = (diffDistance) => {
+  if(loopImageTimer) clearInterval(loopImageTimer);
+  loopImageTimer = setInterval(() => {
+    if(left.value <= carouseWidth) left.value = 0;
+    left.value -= diffDistance;
+
+    if(diffDistance === 1) {
+      loopImageFocusIndex.value = Math.floor(((left.value * -1) / 328) + 1 + 3);
+      // router.push({ name: 'processTermination' })
+      // router.push({ name: 'attentionLevel' })
+    }
+
+  }, 10)
+};
+
+const focusNum = ref(5);
+const v1 = ref(0);
+const v2 = ref(0);
+const v3 = ref(0);
+watch(focusNum, function(v) {
+  const diffDistance = getFocusSpeed(v);
+  loopImage(diffDistance);
+
+  //判断v连续 3 秒在 80以上
+
+}, { immediate: true })
+
+//专注力数值
+onMounted(async () => {
+  await sleep(1000);
+  focusNum.value = 15;
+  await sleep(1000);
+  focusNum.value = 25;
+  await sleep(1000);
+  focusNum.value = 35;
+  await sleep(1000);
+  focusNum.value = 45;
+  await sleep(1000);
+  focusNum.value = 55;
+  await sleep(1000);
+  focusNum.value = 65;
+  await sleep(1000);
+  focusNum.value = 75;
+  await sleep(1000);
+  focusNum.value = 76;
+  await sleep(1000);
+  focusNum.value = 77;
+  await sleep(1000);
+  focusNum.value = 78;
+  await sleep(1000);
+  focusNum.value = 79;
+  await sleep(1000);
+  focusNum.value = 80;
+})
 
 //dot呼吸灯效果
 const router = useRouter();
@@ -127,7 +202,6 @@ const breathLight = async () => {
   opacity.value = 0;
   dotNum.value = 1;
   await sleep(1000);
-  router.push({ name: 'processTermination' })
 }
 
 //tips文字轮动
@@ -148,7 +222,6 @@ const loopTipsText = async () => {
   await sleep(500);
   showLongWord("时间耗尽后专注力仍未达标，进程将会结束")
 }
-
 const showShortWord = () => {
   tipsWidth.value = 140;
 }
@@ -158,15 +231,6 @@ const showLongWord = (txt) => {
   showTipWord.value = false;
   tipsBackGround.value = "rgba(123,123,123,0.38)"
 }
-
-//自定义轮动效果
-let left = ref(0);
-let carouseWidth = (mixSplideImageList.length * 300) + ((mixSplideImageList.length - 1) * 28);
-carouseWidth = 1920 - carouseWidth;
-const timer = setInterval(() => {
-  if(left.value <= carouseWidth) left.value = 0;
-  left.value -= 1;
-}, 5)
 
 </script>
 <style scoped lang="scss">
@@ -248,8 +312,7 @@ div.carousel {
   }
   div.carouselContain {
     width: 100%;
-    height: 400px;
-    overflow-y: hidden;
+    height: 500px;
     position: absolute;
     top: 380px;
     left: 0;
@@ -263,6 +326,15 @@ div.carousel {
       div.carouselItemBox {
         width: 300px;
         height: 400px;
+        &.focusImage {
+          width: 355px;
+          height: 475px;
+          padding: 10px;
+          box-sizing: border-box;
+          box-shadow: 0 0 24px 0 rgba(235,61,61,0.25);
+          border: 5px solid;
+          border-image: linear-gradient(180deg, rgba(255, 229, 0, 1), rgba(28, 160, 255, 1)) 5 5;
+        }
         &:not(:last-child) {
           margin-right: 28px;
         }
@@ -276,7 +348,7 @@ div.carousel {
   }
   div.tipBox {
     position: absolute;
-    bottom: 110px;
+    bottom: 55px;
     left: 85px;
     z-index: 10;
     div.tipInner {

@@ -113,8 +113,10 @@ const dump = () => {
 <template>
 
   <div class="home">
-    <div class="btn" @click="dump">
-      <span>GO</span>
+    <div class="btnContain">
+      <div class="btn" @click="dump">
+        <span>GO</span>
+      </div>
     </div>
     <div class="background-container zoom-floating-card">
 
@@ -309,30 +311,51 @@ const dump = () => {
 div.home {
   position: relative;
 }
-div.btn {
-  width: 197px;
-  height: 197px;
+div.btnContain {
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
-  background: linear-gradient(195deg, #9C56F5 0%, #0057FF 100%);
   position: absolute;
-  right: 95px;
-  bottom: 400px;
+  right: 0;
+  bottom: 50%;
   z-index: 100;
-  transition: background-color .35s linear;
-  cursor: pointer;
+  transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  &:hover {
-    background: linear-gradient(195deg, #D969DA 0%, #66B9D5 100%);
+  &::before {
+    content: "";
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    filter: blur(15px);
+    position: absolute;
+    z-index: -1;
   }
-  span {
-    font-size: 80px;
-    font-family: "Volte";
-    font-weight: bold;
-    color: #FFFFFF;
+  div.btn {
+    width: 197px;
+    height: 197px;
+    border-radius: 50%;
+    background: linear-gradient(195deg, #9C56F5 0%, #0057FF 100%);
+    transition: background-color .35s linear;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    &:hover {
+      background: linear-gradient(195deg, #D969DA 0%, #66B9D5 100%);
+    }
+    span {
+      font-size: 80px;
+      font-family: "Volte";
+      font-weight: bold;
+      color: #FFFFFF;
+    }
   }
 }
+
 
 .floating-container {
   transition:

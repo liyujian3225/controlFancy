@@ -4,13 +4,13 @@
       <div class="logoTxt">
         <img src="../../assets/img/prepare1logo.png" alt="">
       </div>
-      <p class="txt1">
+      <p class="txt1" :style="{opacity: opacity1}">
         <img src="../../assets/img/lineLeft.png" alt="">
         <span>开启想象力交互体验</span>
         <img src="../../assets/img/lineRight.png" alt="">
       </p>
-      <p class="txt2">您的「专注力」和「冥想力」将会成为生物进化的控制器</p>
-      <p class="txt3">
+      <p class="txt2" :style="{opacity: opacity2}">您的「专注力」和「冥想力」将会成为生物进化的控制器</p>
+      <p class="txt3" :style="{opacity: opacity2}">
         <i>Your Ability To Focus And Meditate Will Be The Controller Of Biological Evolution</i>
       </p>
     </div>
@@ -18,14 +18,23 @@
 </template>
 <script setup>
 
-const router = useRouter();
-let timer = null;
-onUnmounted(() => { if(timer)clearTimeout(timer) })
-timer = setTimeout(() => {
-  router.push({
-    name: "prepare2",
+const sleep = (timer = 4000) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, timer)
   })
-}, 4000)
+}
+
+const router = useRouter();
+const opacity1 = ref(0);
+const opacity2 = ref(0);
+onMounted(async () => {
+  await sleep(1000);
+  opacity1.value = 1;
+  await sleep(1000);
+  opacity2.value = 1;
+  await sleep(4000);
+  router.push({ name: "prepare2" })
+})
 
 </script>
 <style lang="scss" scoped>
@@ -60,6 +69,7 @@ div.prepare1 {
       color: #ffffff;
       font-size: 47px;
       font-family: "SourceHanSansCN";
+      transition: opacity .35s linear;
       span {
         margin: 0 43px;
       }
@@ -74,6 +84,7 @@ div.prepare1 {
       color: #ffffff;
       font-size: 45px;
       font-family: "SourceHanSansCN";
+      transition: opacity .35s linear;
     }
     p.txt3 {
       text-align: center;
@@ -82,6 +93,7 @@ div.prepare1 {
       font-size: 27px;
       font-weight: bold;
       font-family: "Volte";
+      transition: opacity .35s linear;
     }
   }
 }

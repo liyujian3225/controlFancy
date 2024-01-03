@@ -45,16 +45,6 @@ const router = createRouter({
       component: () => import('/src/views/attentionLevel/index.vue'),
     },
     {
-      path: '/meditation1',
-      name: 'meditation1',
-      component: () => import('/src/views/meditation1/index.vue'),
-    },
-    {
-      path: '/meditation2',
-      name: 'meditation2',
-      component: () => import('/src/views/meditation2/index.vue'),
-    },
-    {
       path: '/exampleEffect',
       name: 'exampleEffect',
       component: () => import('/src/views/exampleEffect/index.vue'),

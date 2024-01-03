@@ -3,7 +3,7 @@
     <div class="carousel">
       <el-carousel
         class="imgCarousel"
-        height="600px"
+        height="526px"
         :interval="3000"
         indicator-position="outside"
         arrow="never">
@@ -57,14 +57,14 @@ div.prepare {
   background: #000000;
   >div.carousel {
     width: 600px;
-    height: 600px;
+    height: 526px;
     position: absolute;
     top: 243px;
     left: 181px;
     z-index: 10;
     img {
       width: 600px;
-      height: 600px;
+      height: 526px;
     }
   }
   >div.mainText {

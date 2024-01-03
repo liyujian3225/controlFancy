@@ -59,7 +59,7 @@ const opacity2 = ref(0);
 const opacity3 = ref(0);
 
 import normalImg from "../../assets/img/generate2.png"
-import specialImg from "../../assets/img/generate2_.png"
+import specialImg from "../../assets/img/generate2_.gif"
 const turn = ref(0);
 const tureImg = ref(normalImg)
 let turnTimer = null;
@@ -67,20 +67,20 @@ onUnmounted(() => { if(turnTimer) clearInterval(turnTimer) })
 onMounted(() => { initDotAnimate() });
 const initDotAnimate = () => {
   turnTimer = setInterval(async () => {
-    await sleep(1000);
+    await sleep(500);
     opacity1.value = 1;
-    await sleep(1000);
+    await sleep(500);
     opacity2.value = 1;
-    await sleep(1000);
+    await sleep(500);
     opacity3.value = 1;
     await sleep(1000); //开始翻转
     opacity1.value = 0;
     opacity2.value = 0;
     opacity3.value = 0;
     turn.value += 0.5;
-    await sleep(500);
+    await sleep(250);
     tureImg.value = tureImg.value === normalImg ? specialImg : normalImg;
-  }, 4500)
+  }, 3000)
 }
 
 </script>
@@ -130,7 +130,7 @@ div.generate {
       width: 100%;
       height: 100%;
       transform-style: preserve-3d;	/* 动画方式 3d */
-      transition: 1s linear;  /* 运动速度，变速运动 */
+      transition: .5s linear;  /* 运动速度，变速运动 */
     }
   }
   >div.dotContain {
