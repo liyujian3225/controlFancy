@@ -32,7 +32,7 @@
           class="carouselItemBox"
           v-for="(item, index) in mixSplideImageList"
           :key="index"
-          :class="{focusImage: index === 7}">
+          :class="{focusImage: index === loopImageFocusIndex}">
           <img :src="item" alt="">
       </div>
       </div>
@@ -146,7 +146,11 @@ watch(focusNum, function(v) {
         if(diffSecond > 0 && diffSecond <= 6) x = "SSS";
         router.push({
           name: 'attentionLevel',
-          params: { x }
+          params: {
+            x,
+            left: left.value,
+            focusImage: mixSplideImageList[loopImageFocusIndex.value]
+          }
         });
         loopImage(0);
       }else {

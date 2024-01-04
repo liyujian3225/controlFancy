@@ -1,6 +1,12 @@
 <template>
   <div class="attentionLevel">
-    <video id="video" autoplay muted width="1920" height="1080">
+    <video id="video" autoplay muted width="1920" height="1080" v-show="prevVideo">
+      <source
+        type="video/mp4"
+        src="../../assets/video/rect12.mp4">
+      您的当前设备不支持video标签
+    </video>
+    <video id="video" autoplay muted width="1920" height="1080" v-show="nextVideo">
       <source
         type="video/mp4"
         src="../../assets/video/rect4.mp4">
@@ -9,8 +15,12 @@
     <div class="homeBtn" @click="dumpHome">
       <img src="http://aigcassset.oss-cn-beijing.aliyuncs.com/%E5%9B%9E%E5%88%B0%E9%A6%96%E9%A1%B5.png" alt="">
     </div>
-    <img class="mainImage" src="http://aigcassset.oss-cn-beijing.aliyuncs.com/%E9%A6%96%E9%A1%B5%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%89%8D%E5%8A%A8%E7%89%A9%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%89%8D%E5%9B%BE%E7%89%87/%E4%BC%81%E9%B9%85.png" alt="">
-
+    <img
+      class="mainImage"
+      :style="{left: mainImageLeft + 'px'}"
+      :src="focusImage"
+      alt=""
+    >
     <div class="mainTxtStepFirst" :style="{opacity: firstTxtOpacity}">
       <p class="level">{{ level }}</p>
       <p class="chWord">专注力水平</p>
@@ -44,7 +54,9 @@
 </template>
 <script setup>
 const route = useRoute();
-const level = ref(route.params.x);
+const level = route.params.x;
+const left = route.params.left;
+const focusImage = route.params.focusImage;
 
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
@@ -60,6 +72,10 @@ const dumpHome =  () => {
   })
 }
 
+const mainImageLeft = ref(675);
+const prevVideo = ref(true);
+const nextVideo = ref(false);
+
 const firstTxtOpacity = ref(0);
 const secondTxtOpacity = ref(0);
 const thirdTxtOpacity = ref(0);
@@ -70,13 +86,18 @@ const num = ref(3);
 const showNum = ref(false)
 
 onMounted(async () => {
+  mainImageLeft.value = 279;
+  await sleep(4000);
+  prevVideo.value = false;
+  nextVideo.value = true;
   firstTxtOpacity.value = 1;
-  await sleep(6000);
+  await sleep(4000);
   firstTxtOpacity.value = 0;
+  await sleep(1000);
   secondTxtOpacity.value = 1;
-  await sleep(6000);
-  firstTxtOpacity.value = 0;
+  await sleep(4000);
   secondTxtOpacity.value = 0;
+  await sleep(1000);
   thirdTxtOpacity.value = 1;
   await sleep(100);
   showFilter.value = true;
@@ -106,7 +127,7 @@ onMounted(async () => {
   await sleep(1000);
   num.value = 0;
   await sleep(1000);
-  // router.push({ name: 'exampleEffect' })
+  router.push({ name: 'exampleEffect' })
 })
 
 </script>
@@ -134,9 +155,9 @@ div.attentionLevel {
     width: 570px;
     height: 760px;
     position: absolute;
-    top: 159px;
-    left: 279px;
+    top: 160px;
     z-index: 10;
+    transition: left 4s ease;
   }
   div.mainTxtStepFirst {
     width: 360px;
@@ -149,7 +170,7 @@ div.attentionLevel {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    transition: opacity .35s linear;
+    transition: opacity 1s linear;
     p.level {
       height: 180px;
       line-height: 180px;
@@ -186,7 +207,7 @@ div.attentionLevel {
     top: 290px;
     left: 985px;
     z-index: 9;
-    transition: opacity .35s linear;
+    transition: opacity 1s linear;
     p:first-child {
       height: 130px;
       font-size: 120px;
@@ -223,7 +244,7 @@ div.attentionLevel {
     top: 280px;
     left: 985px;
     z-index: 8;
-    transition: opacity .35s linear;
+    transition: opacity 1s linear;
     p:first-child {
       height: 130px;
       font-size: 120px;
