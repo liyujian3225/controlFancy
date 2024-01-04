@@ -47,6 +47,7 @@
   </div>
 </template>
 <script setup>
+import * as dayjs from 'dayjs'
 
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
@@ -118,23 +119,42 @@ onMounted(async () => {
 })
 
 //监听专注力数值
+const startUnix = dayjs().unix();  //组件加载时时间戳
 const focusNumList = [];
 watch(focusNum, function(v) {
-
-  // router.push({ name: 'processTermination' })
+  let endUnix = dayjs().unix();
+  let diffSecond = (endUnix - startUnix);
 
   //最多存储近三次专注力的数值
   let diffDistance = 0;
-  if(focusNumList.length >= 3) focusNumList.shift();
+  if(focusNumList.length >= 4) focusNumList.shift();
   focusNumList.push(v);
-  if(focusNumList.length === 3) {
+  if(focusNumList.length >= 4) {
+    //跳转的核心逻辑
+    //【路径一】如果在15s内，专注力达到80及以上，且从第一次达到80以上开始计算，连续三秒实时收到的数据都保持在80以上，轮播速度线性降低直到停止，选择轮播界面中中心的图片（需要控制速度停下时，有一张图片在画面中心），根据耗用时间区间跟等级定级
+    //第一级：x=S，10<t<=15，
+    //第二级：x=SS, 6<t<=9
+    //第三级：x=SSS, 0<t<=6
+    //【路径二】如果在15内，专注力达到80及以上，且从第一次达到80以上开始计算连续三秒实时收到的数据中存在低于80的，则轮播速度还原到用户专注力水平的速度，等待用户下一次完成图【路径一】
+    //【路径三】若超过15s，则在16秒的时候跳转【进程终止页面】（页面跳转动画为渐隐渐现）
     const trueCondition = focusNumList.every(num => num > 80);
-    if(trueCondition) {
-      router.push({ name: 'attentionLevel' });
-      loopImage(0);
+    if(diffSecond < 15) {
+      if(trueCondition) {
+        let x;
+        if(diffSecond > 10 && diffSecond <= 15) x = "S";
+        if(diffSecond > 6 && diffSecond <= 9) x = "SS";
+        if(diffSecond > 0 && diffSecond <= 6) x = "SSS";
+        router.push({
+          name: 'attentionLevel',
+          params: { x }
+        });
+        loopImage(0);
+      }else {
+        diffDistance = getFocusSpeed(v);
+        loopImage(diffDistance);
+      }
     }else {
-      diffDistance = getFocusSpeed(v);
-      loopImage(diffDistance);
+      router.push({ name: 'processTermination' });
     }
   }else {
     diffDistance = getFocusSpeed(v);

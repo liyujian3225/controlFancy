@@ -12,7 +12,7 @@
     <img class="mainImage" src="http://aigcassset.oss-cn-beijing.aliyuncs.com/%E9%A6%96%E9%A1%B5%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%89%8D%E5%8A%A8%E7%89%A9%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%89%8D%E5%9B%BE%E7%89%87/%E4%BC%81%E9%B9%85.png" alt="">
 
     <div class="mainTxtStepFirst" :style="{opacity: firstTxtOpacity}">
-      <p class="level">S</p>
+      <p class="level">{{ level }}</p>
       <p class="chWord">专注力水平</p>
       <p class="enWord">
         <span>Level of</span>
@@ -43,6 +43,8 @@
   </div>
 </template>
 <script setup>
+const route = useRoute();
+const level = ref(route.params.x);
 
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
