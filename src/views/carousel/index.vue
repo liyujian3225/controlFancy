@@ -56,14 +56,10 @@ const sleep = (timer = 4000) => {
 
 //根据专注力计算轮播图的速度
 const getFocusSpeed = (focusNum) => {
+  //(专注力：79 - 41 = 38)(距离：15 - 1 = 14) 14 / 38 = 0.368
   let diffDistance = 0;
   if(focusNum > 0 && focusNum <= 40) diffDistance = 15;
-  if(focusNum > 40 && focusNum < 80) {
-    //专注力：79 - 41 = 38
-    //距离：15 - 1 = 14
-    //14 / 38 = 0.368
-    diffDistance = 15 - ((focusNum - 41) * 0.368)
-  }
+  if(focusNum > 40 && focusNum < 80) diffDistance = 15 - ((focusNum - 41) * 0.368)
   if(focusNum >= 80) diffDistance = 1;
   return diffDistance;
 }
@@ -98,65 +94,53 @@ const mixSplideImageList_ = [
 ]
 const mixSplideImageList = [...mixSplideImageList_, ...mixSplideImageList_, ...mixSplideImageList_, ...mixSplideImageList_];
 let carouseWidth = 1920 - ((mixSplideImageList.length * 300) + ((mixSplideImageList.length - 1) * 28));
-
-let left = ref(0);
 let loopImageTimer = null;
-let loopImageFocusIndex = ref(0)
 onUnmounted(() => { if(loopImageTimer) clearInterval(loopImageTimer) })
+let left = ref(0);
+let loopImageFocusIndex = ref(-1) //计算最中间图片的位置
 const loopImage = (diffDistance) => {
   if(loopImageTimer) clearInterval(loopImageTimer);
   loopImageTimer = setInterval(() => {
     if(left.value <= carouseWidth) left.value = 0;
     left.value -= diffDistance;
-
-    if(diffDistance === 1) {
+    if(diffDistance === 0) {
       loopImageFocusIndex.value = Math.floor(((left.value * -1) / 328) + 1 + 3);
-      // router.push({ name: 'processTermination' })
-      // router.push({ name: 'attentionLevel' })
     }
-
   }, 10)
 };
 
+//获取专注力数值
 const focusNum = ref(5);
-const v1 = ref(0);
-const v2 = ref(0);
-const v3 = ref(0);
-watch(focusNum, function(v) {
-  const diffDistance = getFocusSpeed(v);
-  loopImage(diffDistance);
-
-  //判断v连续 3 秒在 80以上
-
-}, { immediate: true })
-
-//专注力数值
 onMounted(async () => {
-  await sleep(1000);
-  focusNum.value = 15;
-  await sleep(1000);
-  focusNum.value = 25;
-  await sleep(1000);
-  focusNum.value = 35;
-  await sleep(1000);
-  focusNum.value = 45;
-  await sleep(1000);
-  focusNum.value = 55;
-  await sleep(1000);
-  focusNum.value = 65;
-  await sleep(1000);
-  focusNum.value = 75;
-  await sleep(1000);
-  focusNum.value = 76;
-  await sleep(1000);
-  focusNum.value = 77;
-  await sleep(1000);
-  focusNum.value = 78;
-  await sleep(1000);
-  focusNum.value = 79;
-  await sleep(1000);
-  focusNum.value = 80;
+  setInterval(() => {
+    focusNum.value += 1;
+  }, 1000)
 })
+
+//监听专注力数值
+const focusNumList = [];
+watch(focusNum, function(v) {
+
+  // router.push({ name: 'processTermination' })
+
+  //最多存储近三次专注力的数值
+  let diffDistance = 0;
+  if(focusNumList.length >= 3) focusNumList.shift();
+  focusNumList.push(v);
+  if(focusNumList.length === 3) {
+    const trueCondition = focusNumList.every(num => num > 80);
+    if(trueCondition) {
+      router.push({ name: 'attentionLevel' });
+      loopImage(0);
+    }else {
+      diffDistance = getFocusSpeed(v);
+      loopImage(diffDistance);
+    }
+  }else {
+    diffDistance = getFocusSpeed(v);
+    loopImage(diffDistance);
+  }
+}, { immediate: true })
 
 //dot呼吸灯效果
 const router = useRouter();
