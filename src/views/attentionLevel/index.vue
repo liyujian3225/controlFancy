@@ -47,16 +47,16 @@
       class="layer"
       :style="{'backdrop-filter': `blur(${blur}px)`}"
       v-if="showFilter">
-      <span v-if="showNum">{{ num }}</span>
+      <span v-if="showNum" :style="{opacity: opacityNum}">{{ num }}</span>
     </div>
 
   </div>
 </template>
 <script setup>
 const route = useRoute();
-const level = route.params.x;
-const left = route.params.left;
-const focusImage = route.params.focusImage;
+const level = route.query.x;
+const left = route.query.left;
+const focusImage = route.query.focusImage;
 
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
@@ -83,10 +83,18 @@ const thirdTxtOpacity = ref(0);
 const showFilter = ref(false);
 const blur = ref(1);
 const num = ref(3);
-const showNum = ref(false)
+const showNum = ref(false);
+const opacityNum = ref(0);
 
 onMounted(async () => {
-  mainImageLeft.value = 279;
+  const t = setInterval(() => {
+    if(mainImageLeft.value === 279) {
+      clearInterval(t)
+      return;
+    }
+    mainImageLeft.value -= 1;
+  }, 10)
+
   await sleep(4000);
   prevVideo.value = false;
   nextVideo.value = true;
@@ -120,12 +128,22 @@ onMounted(async () => {
   blur.value = 10;
   await sleep(2000);
   showNum.value = true;
+  opacityNum.value = 1;
+  await sleep(1000);
+  opacityNum.value = 0;
   await sleep(1000);
   num.value = 2;
+  opacityNum.value = 1;
+  await sleep(1000);
+  opacityNum.value = 0;
   await sleep(1000);
   num.value = 1;
+  opacityNum.value = 1;
+  await sleep(1000);
+  opacityNum.value = 0;
   await sleep(1000);
   num.value = 0;
+  opacityNum.value = 1;
   await sleep(1000);
   router.push({ name: 'exampleEffect' })
 })
@@ -289,6 +307,7 @@ div.attentionLevel {
       font-weight: bold;
       color: #FFFFFF;
       font-family: "Volte";
+      transition: opacity 1s linear;
     }
   }
 }

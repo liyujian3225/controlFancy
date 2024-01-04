@@ -47,7 +47,7 @@
   </div>
 </template>
 <script setup>
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
@@ -99,7 +99,7 @@ let loopImageTimer = null;
 onUnmounted(() => { if(loopImageTimer) clearInterval(loopImageTimer) })
 let left = ref(0);
 let loopImageFocusIndex = ref(-1) //计算最中间图片的位置
-const loopImage = (diffDistance) => {
+const loopImage = (diffDistance, callBack) => {
   if(loopImageTimer) clearInterval(loopImageTimer);
   loopImageTimer = setInterval(() => {
     if(left.value <= carouseWidth) left.value = 0;
@@ -107,14 +107,18 @@ const loopImage = (diffDistance) => {
     if(diffDistance === 0) {
       loopImageFocusIndex.value = Math.floor(((left.value * -1) / 328) + 1 + 3);
     }
+    if(callBack) callBack()
   }, 10)
 };
 
 //获取专注力数值
 const focusNum = ref(5);
+let t = null;
+onUnmounted(() => { if(t) clearInterval(t) })
 onMounted(async () => {
-  setInterval(() => {
-    focusNum.value += 1;
+  t = setInterval(() => {
+    if(focusNum.value > 120) focusNum.value = 120
+    focusNum.value += 10;
   }, 1000)
 })
 
@@ -144,15 +148,18 @@ watch(focusNum, function(v) {
         if(diffSecond > 10 && diffSecond <= 15) x = "S";
         if(diffSecond > 6 && diffSecond <= 9) x = "SS";
         if(diffSecond > 0 && diffSecond <= 6) x = "SSS";
-        router.push({
-          name: 'attentionLevel',
-          params: {
-            x,
-            left: left.value,
-            focusImage: mixSplideImageList[loopImageFocusIndex.value]
-          }
+        loopImage(0, function() {
+          setTimeout(() => {
+            router.push({
+              name: 'attentionLevel',
+              query: {
+                x,
+                left: left.value,
+                focusImage: mixSplideImageList[loopImageFocusIndex.value]
+              }
+            });
+          },1000)
         });
-        loopImage(0);
       }else {
         diffDistance = getFocusSpeed(v);
         loopImage(diffDistance);

@@ -3,7 +3,7 @@
     <img class="mainImg" src="http://aigcassset.oss-cn-beijing.aliyuncs.com/%E9%A6%96%E9%A1%B5%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%90%8E%E5%8A%A8%E7%89%A9%E5%9B%BE%E7%89%87/%E4%B9%8C%E9%BE%9F-after.png" alt="">
     <div class="mainText">
       <div>
-        <img src="http://aigcassset.oss-cn-beijing.aliyuncs.com/%E9%A1%B5%E9%9D%A2%E5%9B%BA%E5%AE%9A%E6%96%87%E5%AD%97%E5%88%87%E5%9B%BE/%E4%BA%8C%E7%BB%B4%E7%A0%81.png" alt="">
+        <img :src="mainImageUrl" alt="">
       </div>
       <p>扫码关注公众号</p>
       <p>获取图片、专注力冥想力报告</p>
@@ -14,7 +14,7 @@
     <video autoplay muted width="1920" height="1080" style="transform: translateX(-145px)">
       <source
         type="video/mp4"
-        src="../../assets/video/rect6.mp4">
+        :src="qrCodeImageUrl">
       您的当前设备不支持video标签
     </video>
   </div>
@@ -25,6 +25,17 @@ const router = useRouter();
 const dump = () => {
   router.push({ name: 'home' })
 }
+
+const mainImageUrl = ref("http://aigcassset.oss-cn-beijing.aliyuncs.com/%E9%A1%B5%E9%9D%A2%E5%9B%BA%E5%AE%9A%E6%96%87%E5%AD%97%E5%88%87%E5%9B%BE/%E4%BA%8C%E7%BB%B4%E7%A0%81.png")
+import qrCodeImage from "../../assets/video/rect6.mp4"
+const qrCodeImageUrl = ref(qrCodeImage)
+
+onMounted(() => {
+  //替换主图与二维码图片
+  // mainImageUrl.value = ""
+  // qrCodeImageUrl.value = ""
+})
+
 
 </script>
 <style scoped lang="scss">
