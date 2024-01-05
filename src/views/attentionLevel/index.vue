@@ -89,7 +89,7 @@ onMounted(async () => {
   height.value = 760;
   top.value = 159;
   left.value = 279;
-  await sleep(4000);
+  await sleep(500);
   firstTxtOpacity.value = 1;
   await sleep(4000);
   firstTxtOpacity.value = 0;
