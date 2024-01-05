@@ -13,7 +13,7 @@
         :style="{opacity: opacity, background: `${dotBackground}`}">
         <span v-if="showDotNum">{{ dotNum }}</span>
       </div>
-      <div class="home">
+      <div class="home" @click="dumpHome">
         <img src="http://aigcassset.oss-cn-beijing.aliyuncs.com/%E5%9B%9E%E5%88%B0%E9%A6%96%E9%A1%B5.png" alt="">
       </div>
     </div>
@@ -52,9 +52,14 @@
 <script setup>
 import dayjs from 'dayjs'
 
+const sleepTimeOutList = [];
+onUnmounted(() => {
+  sleepTimeOutList.forEach(t => clearTimeout(t))
+})
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
-    setTimeout(resolve, timer)
+    const t = setTimeout(resolve, timer);
+    sleepTimeOutList.push(t);
   })
 }
 
@@ -103,16 +108,14 @@ onUnmounted(() => { if(loopImageTimer) clearInterval(loopImageTimer) })
 let left = ref(0);
 let isStop1 = ref(false)
 let isStop2 = ref(false)
-let params = reactive({
-  left: 0,
-  top: 0,
-})
 let loopImageFocusIndex = ref("") //计算最中间图片的位置
+let level = ref("")
 const loopImage = (diffDistance, callBack) => {
   if(loopImageTimer) clearInterval(loopImageTimer);
   loopImageTimer = setInterval(() => {
     if(left.value <= carouseWidth) left.value = 0;
     left.value -= diffDistance;
+    //达到跳转的条件
     if(diffDistance === 0.9) {
       if(!loopImageFocusIndex.value) {
         loopImageFocusIndex.value = Math.floor(((left.value * -1) / 328) + 4);
@@ -121,16 +124,39 @@ const loopImage = (diffDistance, callBack) => {
       const fDom = document.getElementsByClassName("carouselItemBox");
       const sDom = fDom[loopImageFocusIndex.value];
       const sDomLeft = sDom.getBoundingClientRect().left;
-      if(sDomLeft <= targetLeft) loopImage(0, async function() {
-        isStop1.value = true;
-        await sleep(1000)
-        isStop2.value = true;
-        await sleep(1000)
-        const bodyTop = document.getElementsByTagName("BODY")[0].getBoundingClientRect().top;
-        const { left, top } = sDom.getBoundingClientRect();
-        params.left = left + 107;
-        params.top = top - bodyTop;
-      });
+
+      if(sDomLeft <= targetLeft) {
+        loopImage(0, async function() {
+          isStop1.value = true;
+          await sleep(1000)
+          isStop2.value = true;
+          await sleep(1000)
+
+          const { left, top } = sDom.getBoundingClientRect();
+          const { left: bodyLeft, top: bodyTop } = document.getElementsByTagName("body")[0].getBoundingClientRect();
+
+          const ratioWH = window.innerWidth / window.innerHeight;
+          let ratio;
+          if(ratioWH < 1.7777) {
+            ratio = 1920 / window.innerWidth;
+          }else {
+            ratio = 1080 / window.innerHeight;
+          }
+          const nLeft = (left - bodyLeft) * ratio;
+          const nTop = (top - bodyTop) * ratio;
+
+          router.push({
+            name: 'attentionLevel',
+            query: {
+              left: nLeft,
+              top: nTop,
+              focusImage: mixSplideImageList[loopImageFocusIndex.value],
+              level: level.value,
+            }
+          });
+
+        });
+      }
 
     }
     if(callBack) callBack()
@@ -174,20 +200,8 @@ watch(focusNum, function(v) {
         if(diffSecond > 10 && diffSecond <= 15) x = "S";
         if(diffSecond > 6 && diffSecond <= 9) x = "SS";
         if(diffSecond > 0 && diffSecond <= 6) x = "SSS";
-        loopImage(0.9, function() {
-          setTimeout(() => {
-            const { left, top } = params;
-            router.push({
-              name: 'attentionLevel',
-              query: {
-                x,
-                left,
-                top,
-                focusImage: mixSplideImageList[loopImageFocusIndex.value]
-              }
-            });
-          },5000)
-        });
+        level.value = x;
+        loopImage(0.9);
       }else {
         diffDistance = getFocusSpeed(v);
         loopImage(diffDistance);
@@ -273,6 +287,12 @@ const showLongWord = (txt) => {
   tipsWidth.value = 800;
   showTipWord.value = false;
   tipsBackGround.value = "rgba(123,123,123,0.38)"
+}
+
+const dumpHome =  () => {
+  router.push({
+    name: "home",
+  })
 }
 
 </script>

@@ -30,9 +30,14 @@
 </template>
 <script setup>
 
+const sleepTimeOutList = [];
+onUnmounted(() => {
+  sleepTimeOutList.forEach(t => clearTimeout(t))
+})
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
-    setTimeout(resolve, timer)
+    const t = setTimeout(resolve, timer);
+    sleepTimeOutList.push(t);
   })
 }
 

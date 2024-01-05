@@ -24,11 +24,18 @@ const dumpHome =  () => {
 };
 
 const num = ref(15);
+
+const sleepTimeOutList = [];
+onUnmounted(() => {
+  sleepTimeOutList.forEach(t => clearTimeout(t))
+})
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
-    setTimeout(resolve, timer)
+    const t = setTimeout(resolve, timer);
+    sleepTimeOutList.push(t);
   })
 }
+
 onMounted(() => { initTimer() })
 const initTimer = async () => {
   await sleep(1000);

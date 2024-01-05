@@ -34,9 +34,14 @@ const dumpHome =  () => {
   })
 }
 
+const sleepTimeOutList = [];
+onUnmounted(() => {
+  sleepTimeOutList.forEach(t => clearTimeout(t))
+})
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
-    setTimeout(resolve, timer)
+    const t = setTimeout(resolve, timer);
+    sleepTimeOutList.push(t);
   })
 }
 
@@ -53,11 +58,16 @@ const initRectAnimate = () => {
   }, 1000)
 }
 
+//最终生成图片
+setTimeout(() => {
+  resultImage.value = "http://aigcassset.oss-cn-beijing.aliyuncs.com/%E9%A6%96%E9%A1%B5%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%89%8D%E5%8A%A8%E7%89%A9%E5%9B%BE%E7%89%87/%E7%94%9F%E6%88%90%E5%89%8D%E5%9B%BE%E7%89%87/%E9%BE%9F.png"
+}, 1000 * 10)
+
 //小圆点动画
 const opacity1 = ref(0);
 const opacity2 = ref(0);
 const opacity3 = ref(0);
-
+const resultImage = ref("")
 import normalImg from "../../assets/img/generate2.png"
 import specialImg from "../../assets/img/generate2_.gif"
 const turn = ref(0);
@@ -80,6 +90,15 @@ const initDotAnimate = () => {
     turn.value += 0.5;
     await sleep(250);
     tureImg.value = tureImg.value === normalImg ? specialImg : normalImg;
+
+    //生成图片时跳转
+    if(resultImage.value) {
+      tureImg.value = resultImage.value;
+      clearInterval(turnTimer);
+      await sleep(2000);
+      router.push({ name: "lastLevel" })
+    }
+
   }, 3000)
 }
 

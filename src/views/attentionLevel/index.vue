@@ -1,17 +1,5 @@
 <template>
   <div class="attentionLevel">
-    <video id="video1" autoplay muted width="1920" height="1080" v-show="prevVideo">
-      <source
-        type="video/mp4"
-        src="../../assets/video/rect12.mp4">
-      您的当前设备不支持video标签
-    </video>
-    <video id="video2" autoplay muted width="1920" height="1080" v-show="nextVideo">
-      <source
-        type="video/mp4"
-        src="../../assets/video/rect4.mp4">
-      您的当前设备不支持video标签
-    </video>
     <div class="homeBtn" @click="dumpHome">
       <img src="http://aigcassset.oss-cn-beijing.aliyuncs.com/%E5%9B%9E%E5%88%B0%E9%A6%96%E9%A1%B5.png" alt="">
     </div>
@@ -23,10 +11,7 @@
          top: top + 'px',
          left: left + 'px',
        }">
-      <img
-        :src="focusImage"
-        alt=""
-      >
+      <img :src="focusImage" alt="" >
     </div>
     <div class="mainTxtStepFirst" :style="{opacity: firstTxtOpacity}">
       <p class="level">{{ level }}</p>
@@ -61,20 +46,22 @@
 </template>
 <script setup>
 const route = useRoute();
-const level = route.query.x;
+const level = route.query.level;
 const focusImage = route.query.focusImage;
 
-const left = ref(route.query.left); //279
-const top = ref(route.query.top);  //160
 const width = ref(375);  //570
 const height = ref(501); //760
+const top = ref(route.query.top);  //160
+const left = ref(route.query.left); //279
 
-console.log(left, top)
-
-
+const sleepTimeOutList = [];
+onUnmounted(() => {
+  sleepTimeOutList.forEach(t => clearTimeout(t))
+})
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
-    setTimeout(resolve, timer)
+    const t = setTimeout(resolve, timer);
+    sleepTimeOutList.push(t);
   })
 }
 
@@ -85,9 +72,6 @@ const dumpHome =  () => {
     name: "home",
   })
 }
-
-const prevVideo = ref(true);
-const nextVideo = ref(false);
 
 const firstTxtOpacity = ref(0);
 const secondTxtOpacity = ref(0);
@@ -103,22 +87,9 @@ onMounted(async () => {
   await sleep(2000);
   width.value = 570;
   height.value = 760;
-  await sleep(2000);
-
-
-  const t = setInterval(() => {
-    if(left.value >= 279) {
-      top.value = 160;
-      clearInterval(t)
-      return;
-    }
-    left.value -= 1;
-    top.value -= 1;
-  }, 10)
-
+  top.value = 159;
+  left.value = 279;
   await sleep(4000);
-  prevVideo.value = false;
-  nextVideo.value = true;
   firstTxtOpacity.value = 1;
   await sleep(4000);
   firstTxtOpacity.value = 0;
@@ -148,23 +119,31 @@ onMounted(async () => {
   await sleep(100);
   blur.value = 10;
   await sleep(2000);
+
   showNum.value = true;
   opacityNum.value = 1;
   await sleep(1000);
+
   opacityNum.value = 0;
   await sleep(1000);
+
   num.value = 2;
   opacityNum.value = 1;
   await sleep(1000);
+
   opacityNum.value = 0;
   await sleep(1000);
+
   num.value = 1;
   opacityNum.value = 1;
   await sleep(1000);
+
   opacityNum.value = 0;
   await sleep(1000);
+
   num.value = 0;
   opacityNum.value = 1;
+
   await sleep(1000);
   router.push({ name: 'exampleEffect' })
 })
@@ -193,14 +172,17 @@ div.attentionLevel {
   >div.carouselItemBox {
     width: 375px;
     height: 501px;
-    position: absolute;
+    position: fixed;
     box-sizing: border-box;
-    background-image: url("../../assets/img/acitveImage.gif");
+    background-image: url("../../assets/img/acitveImage.png");
+
+
     background-size: 100% 100%;
     box-shadow: 0 0 24px 0 rgba(235,61,61,0.25);
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 1s linear;
     img {
       display: block;
       width: 90%;
