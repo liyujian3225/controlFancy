@@ -32,7 +32,10 @@
           class="carouselItemBox"
           v-for="(item, index) in mixSplideImageList"
           :key="index"
-          :class="{focusImage: index === loopImageFocusIndex}">
+          :class="[
+            {focusBackground: index === loopImageFocusIndex && isStop1},
+            {focusImage: index === loopImageFocusIndex && isStop2}
+          ]">
           <img :src="item" alt="">
       </div>
       </div>
@@ -98,14 +101,37 @@ let carouseWidth = 1920 - ((mixSplideImageList.length * 300) + ((mixSplideImageL
 let loopImageTimer = null;
 onUnmounted(() => { if(loopImageTimer) clearInterval(loopImageTimer) })
 let left = ref(0);
-let loopImageFocusIndex = ref(-1) //计算最中间图片的位置
+let isStop1 = ref(false)
+let isStop2 = ref(false)
+let params = reactive({
+  left: 0,
+  top: 0,
+})
+let loopImageFocusIndex = ref("") //计算最中间图片的位置
 const loopImage = (diffDistance, callBack) => {
   if(loopImageTimer) clearInterval(loopImageTimer);
   loopImageTimer = setInterval(() => {
     if(left.value <= carouseWidth) left.value = 0;
     left.value -= diffDistance;
-    if(diffDistance === 0) {
-      loopImageFocusIndex.value = Math.floor(((left.value * -1) / 328) + 1 + 3);
+    if(diffDistance === 0.9) {
+      if(!loopImageFocusIndex.value) {
+        loopImageFocusIndex.value = Math.floor(((left.value * -1) / 328) + 4);
+      }
+      const targetLeft = (window.innerWidth - 355) / 2
+      const fDom = document.getElementsByClassName("carouselItemBox");
+      const sDom = fDom[loopImageFocusIndex.value];
+      const sDomLeft = sDom.getBoundingClientRect().left;
+      if(sDomLeft <= targetLeft) loopImage(0, async function() {
+        isStop1.value = true;
+        await sleep(1000)
+        isStop2.value = true;
+        await sleep(1000)
+        const bodyTop = document.getElementsByTagName("BODY")[0].getBoundingClientRect().top;
+        const { left, top } = sDom.getBoundingClientRect();
+        params.left = left + 107;
+        params.top = top - bodyTop;
+      });
+
     }
     if(callBack) callBack()
   }, 10)
@@ -148,17 +174,19 @@ watch(focusNum, function(v) {
         if(diffSecond > 10 && diffSecond <= 15) x = "S";
         if(diffSecond > 6 && diffSecond <= 9) x = "SS";
         if(diffSecond > 0 && diffSecond <= 6) x = "SSS";
-        loopImage(0, function() {
+        loopImage(0.9, function() {
           setTimeout(() => {
+            const { left, top } = params;
             router.push({
               name: 'attentionLevel',
               query: {
                 x,
-                left: left.value,
+                left,
+                top,
                 focusImage: mixSplideImageList[loopImageFocusIndex.value]
               }
             });
-          },1000)
+          },5000)
         });
       }else {
         diffDistance = getFocusSpeed(v);
@@ -341,14 +369,25 @@ div.carousel {
       div.carouselItemBox {
         width: 300px;
         height: 400px;
-        &.focusImage {
-          width: 355px;
-          height: 475px;
-          padding: 10px;
+        &.focusBackground {
+          width: 300px;
+          height: 400px;
           box-sizing: border-box;
+          background-image: url("../../assets/img/acitveImage.gif");
+          background-size: 100% 100%;
           box-shadow: 0 0 24px 0 rgba(235,61,61,0.25);
-          border: 5px solid;
-          border-image: linear-gradient(180deg, rgba(255, 229, 0, 1), rgba(28, 160, 255, 1)) 5 5;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          img {
+            width: 90%;
+            height: 92%;
+          }
+        }
+        &.focusImage {
+          width: 375px;
+          height: 501px;
+          transition: all .5s linear;
         }
         &:not(:last-child) {
           margin-right: 28px;

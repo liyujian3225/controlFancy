@@ -1,12 +1,12 @@
 <template>
   <div class="attentionLevel">
-    <video id="video" autoplay muted width="1920" height="1080" v-show="prevVideo">
+    <video id="video1" autoplay muted width="1920" height="1080" v-show="prevVideo">
       <source
         type="video/mp4"
         src="../../assets/video/rect12.mp4">
       您的当前设备不支持video标签
     </video>
-    <video id="video" autoplay muted width="1920" height="1080" v-show="nextVideo">
+    <video id="video2" autoplay muted width="1920" height="1080" v-show="nextVideo">
       <source
         type="video/mp4"
         src="../../assets/video/rect4.mp4">
@@ -15,12 +15,19 @@
     <div class="homeBtn" @click="dumpHome">
       <img src="http://aigcassset.oss-cn-beijing.aliyuncs.com/%E5%9B%9E%E5%88%B0%E9%A6%96%E9%A1%B5.png" alt="">
     </div>
-    <img
-      class="mainImage"
-      :style="{left: mainImageLeft + 'px'}"
-      :src="focusImage"
-      alt=""
-    >
+    <div
+      class="carouselItemBox"
+      :style="{
+         width: width + 'px',
+         height: height + 'px',
+         top: top + 'px',
+         left: left + 'px',
+       }">
+      <img
+        :src="focusImage"
+        alt=""
+      >
+    </div>
     <div class="mainTxtStepFirst" :style="{opacity: firstTxtOpacity}">
       <p class="level">{{ level }}</p>
       <p class="chWord">专注力水平</p>
@@ -55,8 +62,15 @@
 <script setup>
 const route = useRoute();
 const level = route.query.x;
-const left = route.query.left;
 const focusImage = route.query.focusImage;
+
+const left = ref(route.query.left); //279
+const top = ref(route.query.top);  //160
+const width = ref(375);  //570
+const height = ref(501); //760
+
+console.log(left, top)
+
 
 const sleep = (timer = 4000) => {
   return new Promise((resolve, reject) => {
@@ -72,7 +86,6 @@ const dumpHome =  () => {
   })
 }
 
-const mainImageLeft = ref(675);
 const prevVideo = ref(true);
 const nextVideo = ref(false);
 
@@ -87,12 +100,20 @@ const showNum = ref(false);
 const opacityNum = ref(0);
 
 onMounted(async () => {
+  await sleep(2000);
+  width.value = 570;
+  height.value = 760;
+  await sleep(2000);
+
+
   const t = setInterval(() => {
-    if(mainImageLeft.value === 279) {
+    if(left.value >= 279) {
+      top.value = 160;
       clearInterval(t)
       return;
     }
-    mainImageLeft.value -= 1;
+    left.value -= 1;
+    top.value -= 1;
   }, 10)
 
   await sleep(4000);
@@ -169,13 +190,22 @@ div.attentionLevel {
       background: #0049B7;
     }
   }
-  >img.mainImage {
-    width: 570px;
-    height: 760px;
+  >div.carouselItemBox {
+    width: 375px;
+    height: 501px;
     position: absolute;
-    top: 160px;
-    z-index: 10;
-    transition: left 4s ease;
+    box-sizing: border-box;
+    background-image: url("../../assets/img/acitveImage.gif");
+    background-size: 100% 100%;
+    box-shadow: 0 0 24px 0 rgba(235,61,61,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    img {
+      display: block;
+      width: 90%;
+      height: 92%;
+    }
   }
   div.mainTxtStepFirst {
     width: 360px;
