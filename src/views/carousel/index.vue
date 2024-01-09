@@ -165,22 +165,26 @@ const loopImage = (diffDistance, callBack) => {
 
 //获取专注力数值
 const focusNum = ref(5);
+const list = [50, 54, 61, 81, 80, 70, 63, 70, 87, 81, 82, 84, 89, 57, 54, 60, 66, 84, 77, 66, 57];
+let index = 0;
 let t = null;
 onUnmounted(() => { if(t) clearInterval(t) })
 onMounted(async () => {
   t = setInterval(() => {
-    if(focusNum.value > 120) focusNum.value = 120
-    focusNum.value += 10;
+    focusNum.value = list[index];
+    index++;
+    if(index >= list.length - 1) index = 0;
   }, 1000)
 })
 
 //监听专注力数值
+const trueCondition_ = ref(false); //是否满足成功跳转的条件
 const startUnix = dayjs().unix();  //组件加载时时间戳
 const focusNumList = [];
 watch(focusNum, function(v) {
+  if(trueCondition_.value) return;
   let endUnix = dayjs().unix();
   let diffSecond = (endUnix - startUnix);
-
   //最多存储近三次专注力的数值
   let diffDistance = 0;
   if(focusNumList.length >= 4) focusNumList.shift();
@@ -196,6 +200,7 @@ watch(focusNum, function(v) {
     const trueCondition = focusNumList.every(num => num > 80);
     if(diffSecond < 15) {
       if(trueCondition) {
+        trueCondition_.value = true;
         let x;
         if(diffSecond > 10 && diffSecond <= 15) x = "S";
         if(diffSecond > 6 && diffSecond <= 9) x = "SS";
