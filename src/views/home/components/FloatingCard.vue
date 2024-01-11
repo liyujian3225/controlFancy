@@ -1,18 +1,30 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 
 const props = defineProps({
   ifFlipped: {
     type: Boolean,
     default: false
   },
-  cardImage: String,
+  localPicture: String,
+  cardDetails: {
+    type: Object,
+    default: () => {
+      return {
+        front_img: '',
+        back_img_1: '',
+        back_img_2: ''
+      }
+    }
+  },
   cardType: {
     type: String,
     default: 'Picture'
   },
   centerX: Number,
-  centerY: Number
+  centerY: Number,
+  cardWidth: Number,
+  cardHeight: Number
 })
 
 // 生成随机移动Delay
@@ -30,15 +42,15 @@ onMounted(() => {
   }, 500)
 })
 
+onBeforeUnmount(() => {
+  clearInterval(timer.value)
+})
+
 // 自动调节卡片尺寸、模糊、z-index
 const rootel = ref(null)
-const cardWidth = 189 * 1.7
-const cardHeight = 252.5 * 1.7
 const ratio = 5000
 const blur_ratio = 1000
 const blur_effect = 1.5
-
-const frontURL = ref('')
 const backURL = ref('')
 
 const updateDistanceToCenter = () => {
@@ -49,8 +61,8 @@ const updateDistanceToCenter = () => {
       Math.pow(props.centerY - cardRect.top - cardRect.height / 2, 2)
   )
   // dynamicCardStyle.value['z-index'] = `${Math.floor(10000 / distance)}`
-  dynamicCardStyle.value.width = `${getDynamicLevel(cardWidth, distance, ratio)}px`
-  dynamicCardStyle.value.height = `${getDynamicLevel(cardHeight, distance, ratio)}px`
+  dynamicCardStyle.value.width = `${getDynamicLevel(props.cardWidth, distance, ratio)}px`
+  dynamicCardStyle.value.height = `${getDynamicLevel(props.cardHeight, distance, ratio)}px`
   dynamicCardStyle.value.filter = `blur(${getBlurDynamicLevel(
     blur_effect,
     distance,
@@ -87,15 +99,13 @@ const dynamicCardStyle = ref({
 // 用Props传参图像url（后续用API取代）
 const getImageUrl = () => {
   // 文字卡片
-  frontURL.value = new URL(`../assets/cards/front/${props.cardImage}.png`, import.meta.url)
-  if (props.cardType != 'Picture') {
-    backURL.value = new URL(`../assets/cards/front/${props.cardImage}.png`, import.meta.url)
+  if (props.cardType == 'Text') {
+    backURL.value = getLocalImg(props.localPicture)
   }
   // 图片卡片
   else {
-    if (Math.random() < 0.5)
-      backURL.value = new URL(`../assets/cards/back/${props.cardImage}.png`, import.meta.url)
-    else backURL.value = new URL(`../assets/cards/back/${props.cardImage}2.png`, import.meta.url)
+    if (Math.random() < 0.5) backURL.value = getImgUrl(props.cardDetails.back_img_1)
+    else backURL.value = getImgUrl(props.cardDetails.back_img_2)
   }
 }
 
@@ -109,6 +119,14 @@ function getGifUrl() {
     import.meta.url
   )
 }
+
+const getLocalImg = (img_name) => {
+  return new URL(`../assets/cards/front/${img_name}.png`, import.meta.url)
+}
+
+const getImgUrl = (path) => {
+  return `data:image/png;base64,${path}`
+}
 </script>
 
 <template>
@@ -116,20 +134,26 @@ function getGifUrl() {
     <div class="card-inner">
       <div class="card-face front-face">
         <img
-          v-if="props.cardType != 'Picture'"
+          v-if="props.cardType == 'Text'"
           class="card-image"
-          :src="frontURL"
-          alt="Card Image"
+          :src="getLocalImg(props.localPicture)"
+          alt="文字卡片"
         />
-        <img v-else class="picture-card-image" :src="frontURL" alt="Card Image" />
+        <img
+          v-else
+          class="picture-card-image"
+          :src="getImgUrl(props.cardDetails.front_img)"
+          alt="输入图像"
+        />
       </div>
       <div class="card-face back-face">
         <img class="halo-effect" src="../assets/others/首页选中光晕.png" />
         <img
           :class="getCardBackClass()"
           :src="backURL"
-          alt="Card Image"
-          :pic_name="props.cardImage"
+          alt="后置图像"
+          :back_img_1="getImgUrl(props.cardDetails.back_img_1)"
+          :back_img_2="getImgUrl(props.cardDetails.back_img_2)"
         />
       </div>
     </div>
@@ -166,14 +190,23 @@ function getGifUrl() {
   0% {
     transform: rotateY(0deg);
   }
-  20% {
+  24% {
     transform: rotateY(0deg);
   }
-  35% {
+  28% {
+    transform: rotateY(90deg);
+  }
+  30% {
     transform: rotateY(180deg);
   }
-  85% {
+  84% {
     transform: rotateY(180deg);
+  }
+  88% {
+    transform: rotateY(90deg);
+  }
+  90% {
+    transform: rotateY(0deg);
   }
   100% {
     transform: rotateY(0deg);
@@ -300,6 +333,45 @@ function getGifUrl() {
   }
   100% {
     transform: translateX(0) translateY(0);
+  }
+}
+
+@media only screen and (min-width: 2561px) {
+  .floating-card {
+    width: 481.95px;
+    height: 643.875px;
+  }
+  .back-picture {
+    width: 600px;
+    height: 600px;
+    border-radius: 25.5px;
+    box-shadow: 30px 30px 15px 15px rgba(0, 0, 0, 0.466);
+    left: -33px;
+    top: -7.5px;
+  }
+  .anim-effect {
+    top: -382.5px;
+    left: -870px;
+    width: 2304px;
+    height: 1296px;
+  }
+  .back-face {
+    .halo-effect {
+      top: -285px;
+      left: -285px;
+      width: 1200px;
+      height: 1200px;
+    }
+  }
+  .picture-card-image {
+    border-radius: 25.5px;
+    box-shadow: 30px 30px 15px 15px rgba(0, 0, 0, 0.466);
+  }
+  .card-image {
+    border-radius: 25.5px;
+    box-shadow: 30px 30px 15px 15px rgba(0, 0, 0, 0.466);
+    left: 15px;
+    top: -37.5px;
   }
 }
 </style>

@@ -1,6 +1,8 @@
 <script setup>
+import axios from 'axios'
 import FloatingCard from './components/FloatingCard.vue'
-import { ref, onMounted } from 'vue'
+import DisplayCard from './components/DisplayCard.vue'
+import { ref, onMounted, onBeforeUnmount, onBeforeMount } from 'vue'
 
 const floating_container = ref(null)
 const closestCard = ref(null)
@@ -10,19 +12,46 @@ const currentCard = ref(null)
 const centerX = ref(window.innerWidth / 2)
 const centerY = ref(window.innerHeight / 2)
 
-const cardWidth = 189 * 1.7
-const cardHeight = 252.5 * 1.7
+const cardWidth = ref(189 * 1.7)
+const cardHeight = ref(252.5 * 1.7)
+const showAmount = '25'
 
 const diffX = ref(0)
 const diffY = ref(0)
-const floating_cards = document.getElementsByClassName('floating-card')
+
+const images = ref([])
+
+const setCardSize = () => {
+  var factor = 1.7
+  switch (window.screen.width) {
+    case 2560:
+      break
+    case 3840:
+      factor = 2.55
+      break
+  }
+  cardWidth.value = 189 * factor
+  cardHeight.value = 252.5 * factor
+}
+
+const fetchImages = async () => {
+  try {
+    const response = await axios.get(
+      'http://127.0.0.1:8000/resources/api/random_images?count=' + showAmount
+    )
+    images.value = response.data
+    console.log(images.value[0])
+  } catch (error) {
+    console.error('Error fetching images:', error)
+  }
+}
 
 const getCardCenterX = (card) => {
-  return card.getBoundingClientRect().left + cardWidth / 2
+  return card.getBoundingClientRect().left + cardWidth.value / 2
 }
 
 const getCardCenterY = (card) => {
-  return card.getBoundingClientRect().top + cardHeight / 2
+  return card.getBoundingClientRect().top + cardHeight.value / 2
 }
 
 const updateCenter = () => {
@@ -34,16 +63,16 @@ const updateCenter = () => {
 
 // 从几张备选的翻面图像中随机选择一张进行展示
 const setRandomCardBackImage = (img_elem) => {
-  const cardName = img_elem.getAttribute('pic_name')
   if (Math.random() < 0.5) {
-    img_elem.src = new URL(`./assets/cards/back/${cardName}.png`, import.meta.url)
+    img_elem.src = img_elem.getAttribute('back_img_1')
   } else {
-    img_elem.src = new URL(`./assets/cards/back/${cardName}2.png`, import.meta.url)
+    img_elem.src = img_elem.getAttribute('back_img_2')
   }
 }
 
 const updateDistanceToCenter = () => {
   // 遍历所有卡片，寻找最接近屏幕中心的卡片
+  const floating_cards = document.getElementsByClassName('floating-card')
   closestCard.value = null
   distances.value = new Map()
   updateCenter()
@@ -51,7 +80,7 @@ const updateDistanceToCenter = () => {
     if (currentCard.value == floating_cards[i]) continue
     const distance = Math.sqrt(
       Math.pow(centerX.value - getCardCenterX(floating_cards[i]), 2) +
-      Math.pow(centerY.value - getCardCenterY(floating_cards[i]), 2)
+        Math.pow(centerY.value - getCardCenterY(floating_cards[i]), 2)
     )
     distances.value.set(distance, floating_cards[i])
   }
@@ -82,7 +111,6 @@ const updateDistanceToCenter = () => {
     inner_card[0].classList.add('flipped')
     halo_effect[0].classList.add('play-halo')
   }, 6000)
-  console.log(anim_effect)
 
   setTimeout(() => {
     anim_effect[0].classList.remove('gif-anim')
@@ -92,6 +120,11 @@ const updateDistanceToCenter = () => {
   dynamicFloatingContainer.value.scale = 1
 }
 
+onBeforeMount(() => {
+  fetchImages()
+  setCardSize()
+})
+
 const timer = ref(0)
 onMounted(() => {
   updateDistanceToCenter()
@@ -100,18 +133,300 @@ onMounted(() => {
   }, 11000)
 })
 
+onBeforeUnmount(() => {
+  clearInterval(timer.value)
+})
+
 const dynamicFloatingContainer = ref({
   transform: ``
 })
+
+const picture_card_positions = [
+  {
+    top: '15',
+    left: '5'
+  },
+  {
+    top: '50',
+    left: '27'
+  },
+  {
+    top: '94',
+    left: '20'
+  },
+  {
+    top: '40',
+    left: '73'
+  },
+  {
+    top: '33',
+    left: '-43'
+  },
+  {
+    top: '25',
+    left: '95'
+  },
+  {
+    top: '68',
+    left: '110'
+  },
+  {
+    top: '108',
+    left: '50'
+  },
+  {
+    top: '-28',
+    left: '82'
+  },
+  {
+    top: '58',
+    left: '50'
+  },
+  {
+    top: '-40',
+    left: '-2'
+  },
+  {
+    top: '53',
+    left: '137'
+  },
+  {
+    top: '-55',
+    left: '60'
+  },
+  {
+    top: '162',
+    left: '8'
+  },
+  {
+    top: '88',
+    left: '-33'
+  },
+  {
+    top: '142',
+    left: '-28'
+  },
+  {
+    top: '120',
+    left: '97'
+  },
+  {
+    top: '130',
+    left: '118'
+  },
+  {
+    top: '38',
+    left: '157'
+  },
+  {
+    top: '28',
+    left: '-20'
+  },
+  {
+    top: '-25',
+    left: '-30'
+  },
+  {
+    top: '-5',
+    left: '28'
+  },
+  {
+    top: '202',
+    left: '28'
+  },
+  {
+    top: '163',
+    left: '50'
+  },
+  {
+    top: '112',
+    left: '-5'
+  }
+]
+
+const text_card_positions = [
+  {
+    localPicture: '卡片1-控制想象',
+    top: '15',
+    left: '52'
+  },
+  {
+    localPicture: '卡片2-脑机接口',
+    top: '-80',
+    left: '-20'
+  },
+  {
+    localPicture: '卡片3-人工智能',
+    top: '-48',
+    left: '32'
+  },
+  {
+    localPicture: '卡片2-脑机接口',
+    top: '88',
+    left: '77'
+  },
+  {
+    localPicture: '卡片1-控制想象',
+    top: '103',
+    left: '145'
+  },
+  {
+    localPicture: '卡片3-人工智能',
+    top: '5',
+    left: '123'
+  },
+  {
+    localPicture: '卡片2-脑机接口',
+    top: '62',
+    left: '0'
+  },
+  {
+    localPicture: '卡片3-人工智能',
+    top: '-33',
+    left: '-52'
+  },
+  {
+    localPicture: '卡片1-控制想象',
+    top: '42',
+    left: '-65'
+  },
+  {
+    localPicture: '卡片3-人工智能',
+    top: '138',
+    left: '73'
+  },
+  {
+    localPicture: '卡片2-脑机接口',
+    top: '195',
+    left: '-15'
+  },
+  {
+    localPicture: '卡片1-控制想象',
+    top: '143',
+    left: '30'
+  }
+]
+
+const display_cards = [
+  {
+    top: '-110',
+    left: '15'
+  },
+  {
+    top: '-90',
+    left: '-50'
+  },
+  {
+    top: '-128',
+    left: '-23'
+  },
+  {
+    top: '-70',
+    left: '-90'
+  },
+  {
+    top: '-10',
+    left: '-75'
+  },
+  {
+    top: '0',
+    left: '-100'
+  },
+  {
+    top: '50',
+    left: '-96'
+  },
+  {
+    top: '100',
+    left: '-80'
+  },
+  {
+    top: '120',
+    left: '-55'
+  },
+  {
+    top: '175',
+    left: '-68'
+  },
+  {
+    top: '195',
+    left: '-40'
+  },
+  {
+    top: '250',
+    left: '-20'
+  },
+  {
+    top: '238',
+    left: '-53'
+  },
+  {
+    top: '238',
+    left: '8'
+  },
+  {
+    top: '242',
+    left: '48'
+  },
+  {
+    top: '203',
+    left: '70'
+  },
+  {
+    top: '180',
+    left: '100'
+  },
+  {
+    top: '195',
+    left: '132'
+  },
+  {
+    top: '160',
+    left: '155'
+  },
+  {
+    top: '110',
+    left: '174'
+  },
+  {
+    top: '50',
+    left: '185'
+  },
+  {
+    top: '-20',
+    left: '158'
+  },
+  {
+    top: '-45',
+    left: '128'
+  },
+  {
+    top: '-80',
+    left: '98'
+  },
+  {
+    top: '-100',
+    left: '50'
+  }
+]
+
+const calculateCardStyle = (text_card) => {
+  return {
+    // top: `${Number(text_card.top) + 150}vh`,
+    // left: `${Number(text_card.left) + 150}vw`
+    top: `${Number(text_card.top)}vh`,
+    left: `${Number(text_card.left)}vw`
+  }
+}
 
 const router = useRouter();
 const dump = () => {
   router.push({ name: 'prepare1' })
 }
+
 </script>
 
 <template>
-
   <div class="home">
     <div class="btnContain">
       <div class="btn" @click="dump">
@@ -119,193 +434,53 @@ const dump = () => {
       </div>
     </div>
     <div class="background-container zoom-floating-card">
-
       <div ref="floating_container" class="floating-container" :style="dynamicFloatingContainer">
-        <FloatingCard
-          cardImage="卡片1-控制想象"
-          style="top: -5vh; left: 60vw"
-          cardType="text"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="卡片2-脑机接口"
-          style="top: 58vh; left: 50vw"
-          cardType="text"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="卡片3-人工智能"
-          style="top: 5vh; left: 28vw"
-          cardType="text"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="乌龟"
-          style="top: 15vh; left: 5vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="企鹅"
-          style="top: 50vh; left: 27vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="变色龙"
-          style="top: 94vh; left: 20vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="孔雀"
-          style="top: 40vh; left: 73vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="小丑鱼"
-          style="top: 62vh; left: 0vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="河马"
-          style="top: 25vh; left: 95vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="海豚"
-          style="top: 88vh; left: 77vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="狗熊"
-          style="top: 108vh; left: 50vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="熊猫"
-          style="top: 120vh; left: 97vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="狗"
-          style="top: 58vh; left: 137vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="狮子"
-          style="top: 68vh; left: 110vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="猫"
-          style="top: -28vh; left: 82vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="瞪羚"
-          style="top: -48vh; left: 37vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="老虎"
-          style="top: -30vh; left: 7vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="蜜蜂"
-          style="top: 28vh; left: -20vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="蝴蝶"
-          style="top: 108vh; left: -5vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="螃蟹"
-          style="top: 5vh; left: 123vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="象"
-          style="top: -55vh; left: 60vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="青牛"
-          style="top: 138vh; left: 73vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="青蛙"
-          style="top: 143vh; left: 30vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="马"
-          style="top: 162vh; left: 8vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="骆驼"
-          style="top: -25vh; left: -30vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="鸽子"
-          style="top: 88vh; left: -33vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="鹦鹉"
-          style="top: 33vh; left: -48vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
-        <FloatingCard
-          cardImage="鹰"
-          style="top: 142vh; left: -28vw"
-          :centerX="centerX"
-          :centerY="centerY"
-        />
+        <div v-for="(text_card, index) in images" :key="index" id="PictureCards">
+          <FloatingCard
+            :key="index"
+            :cardDetails="text_card"
+            :style="calculateCardStyle(picture_card_positions[index])"
+            :centerX="centerX"
+            :centerY="centerY"
+            :cardWidth="cardWidth"
+            :cardHeight="cardHeight"
+          />
+        </div>
+        <div v-for="(text_card, index) in text_card_positions" :key="index" id="TextCards">
+          <FloatingCard
+            :key="index"
+            cardType="Text"
+            :localPicture="text_card.localPicture"
+            :style="calculateCardStyle(text_card)"
+            :centerX="centerX"
+            :centerY="centerY"
+            :cardWidth="cardWidth"
+            :cardHeight="cardHeight"
+          />
+        </div>
+        <div v-for="(image, index) in images" :key="index" id="DiaplayCards">
+          <DisplayCard
+            :key="index"
+            :base_front_img="image.front_img"
+            :style="calculateCardStyle(display_cards[index])"
+            :centerX="centerX"
+            :centerY="centerY"
+            :cardWidth="cardWidth"
+            :cardHeight="cardHeight"
+          />
+        </div>
       </div>
     </div>
   </div>
 
-
 </template>
 
-<style scoped lang="scss">
+<style scoped>
 .background-container {
   width: 100%;
   height: 100vh;
   background-color: #000;
   overflow: hidden;
-
 }
 
 div.home {
@@ -355,7 +530,6 @@ div.btnContain {
     }
   }
 }
-
 
 .floating-container {
   transition:
