@@ -25,14 +25,16 @@ const dumpHome =  () => {
   })
 };
 
-
 let timer = null;
 onUnmounted(() => { if(timer)clearTimeout(timer) })
-timer = setTimeout(() => {
-  router.push({
-    name: "generate",
-  })
-}, 5000)
+onMounted(() => {
+  timer = setTimeout(() => {
+    router.push({
+      name: "generate",
+    })
+  }, 5000)
+})
+
 
 </script>
 <style scoped lang="scss">
